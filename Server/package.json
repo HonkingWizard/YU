@@ -1,0 +1,21 @@
+{
+  "name": "yu-server",
+  "version": "1.0.0",
+  "description": "Backend for YU- An air pollution monitoring system",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.js"
+  },
+  "keywords": [
+    "node",
+    "yu",
+    "server",
+    "api"
+  ],
+  "author": "Mayank Tiwari",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4"
+  }
+}
