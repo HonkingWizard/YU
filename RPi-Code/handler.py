@@ -2,13 +2,16 @@ import serial
 import threading
 import requests
 import time
+import random
 
 class DeviceHandler:
     
-    def __init__(self,baud_rate = 9600,serial_port = '/dev/ttyUSB0',server_address = 'http://127.0.0.1:3000/post-data'):
+    def __init__(self,device_id,location,baud_rate = 9600,serial_port = '/dev/ttyUSB0',server_address = 'http://127.0.0.1:3000/post-data'):
         self.baud_rate = baud_rate
         self.serial_port = serial_port
         self.server_address = server_address 
+        self.DeviceID = device_id
+        self.Location = location
 
         try:
             self.uc = serial.Serial(self.serial_port,self.baud_rate)
@@ -21,22 +24,32 @@ class DeviceHandler:
         try:
             FetchedData = self.uc.readline()
             FetchedData = FetchedData.decode("utf-8") 
+
+            var1,var2 = FetchedData.split('-')
         except:
             print('\nHaving issues with decoding...')
             return
 
-        data ={
-            'SensorValue': FetchedData
-        }
 
-        r = requests.post(self.server_address,data)
-        print('\n\tValue Sent -> ' + str(data['SensorValue']) )         
+        data ={
+            'CO2':var1.strip(),
+            'CO':str(int(var1.strip())+random.randint(100,500)),
+            'AIRQ':var2.strip(),
+            'DeviceID': self.DeviceID,
+            'location': self.Location
+        }
+        try:
+            r = requests.post(self.server_address,data)
+        except:
+            print('\n\tServer not responding...Make sure its up and running\n\t\tReconnecting in 10 secs..')
+            return
+        print('\n\tValue Sent -> ' + str(data['CO2']))         
 
 
 
 if __name__ == "__main__":
     
-    handler = DeviceHandler()
+    handler = DeviceHandler(device_id = 'JAGAT2019',location = 'Jagatpura')
     
     while True:
         handler.run()
