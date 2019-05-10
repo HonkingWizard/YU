@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-
+var cors = require('cors')
 const app = express();
 const port = 3000;
 
@@ -15,12 +15,14 @@ var dataSchema = new mongoose.Schema({
     SensorValue: {
         co2: String,
         co: String,
+        ch4: String,
         aqi: String
     }
 });
 
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());
+app.use(cors())
 
 
 function updateClock(){
@@ -39,7 +41,7 @@ sensordata = mongoose.model('gasesdata',dataSchema);
 app.get('/get-data', (req, res) => {
     var location = req.query.location;
     var currentDate = updateClock();
-    sensordata.findOne({Location: location},function(err,result){
+    sensordata.findOne({Location: location,EntryDate: currentDate},function(err,result){
         if(err){
             console.log(err);
         }
@@ -51,7 +53,8 @@ app.get('/get-data', (req, res) => {
             res.json({
                 co2: result.SensorValue.co2,
                 co: result.SensorValue.co,
-                airq: result.SensorValue.aqi
+                ch4: result.SensorValue.ch4,
+                aqi_val: result.SensorValue.aqi
             });
         }
     })
@@ -63,6 +66,7 @@ app.post('/post-data',(req , res) => {
     var locationData = req.body.location;
     var co_data = req.body.CO;
     var co2_data = req.body.CO2;
+    var ch4_data = req.body.CH4;
     var airq_data = req.body.AIRQ;
     var date = updateClock()
 
@@ -82,6 +86,7 @@ app.post('/post-data',(req , res) => {
             dataEntry.EntryDate = date;
             dataEntry.SensorValue.co2 = co2_data;
             dataEntry.SensorValue.co = co_data;
+            dataEntry.SensorValue.ch4 = ch4_data;
             dataEntry.SensorValue.aqi = airq_data; 
             dataEntry.save();
         }
@@ -90,6 +95,7 @@ app.post('/post-data',(req , res) => {
             result.SensorValue.co2 = co2_data;
             result.SensorValue.co = co_data;
             result.SensorValue.aqi = airq_data;
+            result.SensorValue.ch4 = ch4_data;
             result.save();
         }
         

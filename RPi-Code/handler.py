@@ -3,7 +3,7 @@ import threading
 import requests
 import time
 import random
-
+import os
 class DeviceHandler:
     
     def __init__(self,device_id,location,baud_rate = 9600,serial_port = '/dev/ttyUSB0',server_address = 'http://127.0.0.1:3000/post-data'):
@@ -25,7 +25,7 @@ class DeviceHandler:
             FetchedData = self.uc.readline()
             FetchedData = FetchedData.decode("utf-8") 
 
-            var1,var2 = FetchedData.split('-')
+            var1,var2,var3,var4 = FetchedData.split('-')
         except:
             print('\nHaving issues with decoding...')
             return
@@ -33,17 +33,20 @@ class DeviceHandler:
 
         data ={
             'CO2':var1.strip(),
-            'CO':str(int(var1.strip())+random.randint(100,500)),
-            'AIRQ':var2.strip(),
+            'CO':var2.strip(),
+            'CH4':var3.strip(),
+            'AIRQ':var4.strip(),
             'DeviceID': self.DeviceID,
             'location': self.Location
         }
         try:
             r = requests.post(self.server_address,data)
         except:
+            os.system('clear')
             print('\n\tServer not responding...Make sure its up and running\n\t\tReconnecting in 10 secs..')
+            time.sleep(10)
             return
-        print('\n\tValue Sent -> ' + str(data['CO2']))         
+        print('\n\tValue Sent -> ' + str(data['CO2'])+" "+str(data['CO'])+" "+str(data['CH4']))         
 
 
 

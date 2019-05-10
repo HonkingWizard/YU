@@ -3,6 +3,10 @@ import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { AirQ } from '../../AirQ';
 import { HomePage } from '../home/home';
 import { Chart } from 'chart.js'
+import { DataFetchProvider } from '../../providers/data-fetch/data-fetch';
+import { HttpClient } from '@angular/common/http';
+
+
 
 /**
  * Generated class for the DetailsPage page.
@@ -22,27 +26,27 @@ export class DetailsPage {
 
   area: AirQ;
   barChart: any;
+  gas_ppm: any = null;
+  apiUrl = 'http://127.0.0.1:3000'
+  
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+  constructor(public navCtrl: NavController, public navParams: NavParams,public dataService: DataFetchProvider,public http: HttpClient) {
     this.area = navParams.get('selectedAreaInfo');
+ 
   }
   
-
-  
-  returnHome() {
-    this.navCtrl.setRoot(HomePage);
-    this.navCtrl.popToRoot();
-  }
-
-  ionViewDidLoad() {
+  ionViewWillEnter() : void{
+    this.http.get(this.apiUrl + '/get-data?location=' + this.area.place).subscribe(data => {
+    this.gas_ppm = data;
+    console.log(data)
     this.barChart = new Chart(this.barCanvas.nativeElement, {
 
       type: 'bar',
       data: {
-          labels: ["CO2", "H2S", "SO2", "NO3"],
+          labels: ["CO2", "CO", "CH4", "AQI"],
           datasets: [{
               label: 'In PPM',
-              data: [Number(this.area.Co2),Number(this.area.H2s),Number(this.area.So2),Number(this.area.No3)],
+              data: [Number(this.gas_ppm.co2),Number(this.gas_ppm.co),Number(this.gas_ppm.ch4),Number(this.gas_ppm.aqi_val)],
               backgroundColor: [
                   'rgba(255, 99, 132, 0.2)',
                   'rgba(54, 162, 235, 0.2)',
@@ -69,6 +73,21 @@ export class DetailsPage {
       }
 
   });
+  },
+  err => {
+      console.log(err);
+  });
+ }
+
+  
+  returnHome() {
+    this.navCtrl.setRoot(HomePage);
+    this.navCtrl.popToRoot();
+  }
+
+  ionViewDidLoad() {
+
+   
   }
 
 }
